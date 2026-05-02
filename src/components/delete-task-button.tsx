@@ -35,17 +35,18 @@ export function DeleteTaskButton({ taskId }: { taskId: string }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="relative flex items-center">
       <button
         type="button"
         onClick={handleDelete}
         disabled={isPending}
-        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-70"
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+        title="Delete task"
       >
-        <Trash2 className="h-3.5 w-3.5" />
-        {isPending ? "Deleting..." : "Delete"}
+        <Trash2 className="h-4 w-4" />
+        <span className="sr-only">Delete task</span>
       </button>
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {error ? <span className="absolute -bottom-6 right-0 w-max rounded bg-rose-100 px-2 py-1 text-[10px] font-medium text-rose-600">{error}</span> : null}
     </div>
   );
 }

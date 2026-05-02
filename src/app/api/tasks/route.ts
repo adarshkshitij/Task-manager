@@ -16,7 +16,10 @@ export async function GET() {
     session.user.role === Role.ADMIN
       ? {}
       : {
-          assignedToId: session.user.id,
+          OR: [
+            { assignedToId: session.user.id },
+            { createdById: session.user.id },
+          ],
         };
 
   const tasks = await prisma.task.findMany({
@@ -45,13 +48,25 @@ export async function POST(request: Request) {
     return jsonError("Unauthorized.", 401);
   }
 
-  if (session.user.role !== Role.ADMIN) {
-    return jsonError("Forbidden.", 403);
-  }
-
   try {
     const body = await readJsonBody(request);
     const data = taskSchema.parse(body);
+
+    if (session.user.role !== Role.ADMIN) {
+      const creatorMembership = await prisma.projectMember.findUnique({
+        where: {
+          projectId_userId: {
+            projectId: data.projectId,
+            userId: session.user.id,
+          },
+        },
+      });
+
+      if (!creatorMembership) {
+        return jsonError("Forbidden. You must belong to the project to create tasks.", 403);
+      }
+    }
+
 
     const membership = await prisma.projectMember.findUnique({
       where: {

@@ -5,6 +5,37 @@ import { prisma } from "@/lib/prisma";
 import { projectMemberSchema } from "@/lib/schemas";
 import { getSession } from "@/lib/session";
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await getSession();
+
+  if (!session?.user) {
+    return jsonError("Unauthorized.", 401);
+  }
+
+  try {
+    const { id } = await params;
+
+    const memberships = await prisma.projectMember.findMany({
+      where: { projectId: id },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    const members = memberships.map((m) => m.user);
+
+    return Response.json(members);
+  } catch (error) {
+    console.error(error);
+    return jsonError("Unable to fetch members.", 500);
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

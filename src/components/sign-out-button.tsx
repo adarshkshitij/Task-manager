@@ -3,8 +3,15 @@
 import { useTransition } from "react";
 import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
-export function SignOutButton() {
+export function SignOutButton({ 
+  className,
+  showLabel = true 
+}: { 
+  className?: string;
+  showLabel?: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -15,10 +22,13 @@ export function SignOutButton() {
           void signOut({ callbackUrl: "/login" });
         });
       }}
-      className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+      className={cn(
+        "w-full flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all",
+        className
+      )}
     >
       <LogOut className="h-4 w-4" />
-      {isPending ? "Signing out..." : "Logout"}
+      {showLabel && (isPending ? "Exiting..." : "Sign Out")}
     </button>
   );
 }

@@ -27,7 +27,7 @@ export async function PATCH(
 
     const body = await readJsonBody(request);
 
-    if (session.user.role === Role.ADMIN) {
+    if (session.user.role === Role.ADMIN || existingTask.createdById === session.user.id) {
       const data = taskSchema.partial().parse(body);
 
       if (data.assignedToId || data.projectId) {
@@ -90,10 +90,6 @@ export async function DELETE(
     return jsonError("Unauthorized.", 401);
   }
 
-  if (session.user.role !== Role.ADMIN) {
-    return jsonError("Forbidden.", 403);
-  }
-
   const { id } = await params;
 
   const task = await prisma.task.findUnique({
@@ -102,6 +98,10 @@ export async function DELETE(
 
   if (!task) {
     return jsonError("Task not found.", 404);
+  }
+
+  if (session.user.role !== Role.ADMIN && task.createdById !== session.user.id) {
+    return jsonError("Forbidden.", 403);
   }
 
   await prisma.task.delete({
